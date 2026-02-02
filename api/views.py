@@ -67,10 +67,69 @@ class OrderItemViewSet(ModelViewSet):
     serializer_class = OrderItemSerializer
     permission_classes = [IsAuthenticated]
 
+# Custom ViewSet for User Cart Management
+from rest_framework.decorators import action
+from rest_framework.response import Response
+
+class CartViewSet(ModelViewSet):
+    serializer_class = OrderSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Order.objects.filter(user=self.request.user, status='pending')
+
+    def list(self, request, *args, **kwargs):
+        order, created = Order.objects.get_or_create(user=request.user, status='pending')
+        serializer = self.get_serializer(order)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['post'])
+    def add_item(self, request):
+        order, created = Order.objects.get_or_create(user=request.user, status='pending')
+        product_id = request.data.get('product_id')
+        quantity = int(request.data.get('quantity', 1))
+        
+        try:
+            product = Product.objects.get(id=product_id)
+        except Product.DoesNotExist:
+            return Response({'error': 'Product not found'}, status=404)
+
+        # Check if item exists in cart
+        order_item, item_created = OrderItem.objects.get_or_create(order=order, product=product, defaults={'quantity': 0, 'price': product.price})
+        if not item_created:
+            order_item.quantity += quantity
+        else:
+            order_item.quantity = quantity
+        
+        order_item.price = product.price # Update price in case it changed
+        order_item.save()
+        
+        return Response({'message': 'Item added to cart'})
+
+    @action(detail=False, methods=['post'])
+    def remove_item(self, request):
+        order, created = Order.objects.get_or_create(user=request.user, status='pending')
+        product_id = request.data.get('product_id')
+        
+        try:
+            item = OrderItem.objects.get(order=order, product_id=product_id)
+            item.delete()
+            return Response({'message': 'Item removed from cart'})
+        except OrderItem.DoesNotExist:
+            return Response({'error': 'Item not in cart'}, status=404)
+
 # View for listing and creating reviews
 class ReviewListCreateView(generics.ListCreateAPIView):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    
+    def get_queryset(self):
+        queryset = Review.objects.all()
+        product_id = self.request.query_params.get('product')
+        if product_id:
+            queryset = queryset.filter(product_id=product_id)
+        return queryset
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
@@ -96,15 +155,18 @@ def register_user(request):
         data = json.loads(request.body)
         email = data.get('email')
         password = data.get('password')
+        username = data.get('username')
         if email and password:
             try:
-                user = User.objects.create_user(email=email, password=password)
+                user = User.objects.create_user(email=email, username=username, password=password)
                 return JsonResponse({'message': 'User registered successfully'})
             except Exception as e:
                 return JsonResponse({'error': str(e)}, status=400)
         else:
             return JsonResponse({'error': 'Email and password are required'}, status=400)
     return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+from rest_framework_simplejwt.tokens import RefreshToken
 
 # Function to login a user
 @csrf_exempt
@@ -115,8 +177,15 @@ def login_user(request):
         password = data.get('password')
         user = authenticate(request, email=email, password=password)
         if user is not None:
-            login(request, user)
-            return JsonResponse({'message': 'User logged in successfully'})
+            # login(request, user)  <-- REMOVED to avoid Session/CSRF conflict
+            refresh = RefreshToken.for_user(user)
+            return JsonResponse({
+                'message': 'User logged in successfully',
+                'username': user.username,
+                'is_staff': user.is_staff,
+                'access': str(refresh.access_token),
+                'refresh': str(refresh)
+            })
         else:
             return JsonResponse({'error': 'Invalid credentials'}, status=400)
     return JsonResponse({'error': 'Invalid request method'}, status=405)

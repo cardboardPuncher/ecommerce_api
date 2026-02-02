@@ -16,6 +16,9 @@ router.register(r'categories', CategoryViewSet)  # Category viewset
 router.register(r'orders', OrderViewSet)  # Order viewset
 router.register(r'order-items', OrderItemViewSet)  # Order item viewset
 
+from .views import CartViewSet
+router.register(r'cart', CartViewSet, basename='cart')
+
 # Define URL patterns
 urlpatterns = [
     # Token obtain pair view

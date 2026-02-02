@@ -3,8 +3,8 @@ let products = [];
 let cart = JSON.parse(localStorage.getItem('cart')) || [];
 let currentProduct = null;
 
-const API_URL = 'http://127.0.0.1:8000/api/products/';
-const REVIEWS_API_URL = 'http://127.0.0.1:8000/api/reviews/';
+const API_URL = 'https://chornate.pythonanywhere.com/api/products/';
+const REVIEWS_API_URL = 'https://chornate.pythonanywhere.com/api/reviews/';
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function () {
@@ -128,7 +128,7 @@ function fetchCart() {
     var user = JSON.parse(userStr);
     var headers = { 'Authorization': 'Bearer ' + user.token };
 
-    makeRequest('GET', 'http://127.0.0.1:8000/api/cart/', headers, null, function (error, data) {
+    makeRequest('GET', 'https://chornate.pythonanywhere.com/api/cart/', headers, null, function (error, data) {
         if (error) {
             console.error("Fetch cart error", error);
             return;
@@ -170,7 +170,7 @@ function addToCart(product) {
         };
         var body = JSON.stringify({ product_id: product.id, quantity: 1 });
 
-        makeRequest('POST', 'http://127.0.0.1:8000/api/cart/add_item/', headers, body, function (error) {
+        makeRequest('POST', 'https://chornate.pythonanywhere.com/api/cart/add_item/', headers, body, function (error) {
             if (error) {
                 console.error('Error adding to cart:', error);
             } else {
@@ -242,7 +242,7 @@ window.removeFromCart = function (index) {
         };
         var body = JSON.stringify({ product_id: product.id || product.product_id });
 
-        makeRequest('POST', 'http://127.0.0.1:8000/api/cart/remove_item/', headers, body, function (error) {
+        makeRequest('POST', 'https://chornate.pythonanywhere.com/api/cart/remove_item/', headers, body, function (error) {
             if (error) {
                 console.error('Error removing from cart', error);
             } else {
@@ -365,7 +365,7 @@ function setupEventListeners() {
             var headers = { 'Content-Type': 'application/json' };
             var body = JSON.stringify({ email: email, password: password });
 
-            makeRequest('POST', 'http://127.0.0.1:8000/api/auth/login/', headers, body, function (error, data) {
+            makeRequest('POST', 'https://chornate.pythonanywhere.com/api/auth/login/', headers, body, function (error, data) {
                 if (error || !data.access) {
                     alert(data && data.error ? data.error : 'Login failed');
                     return;
@@ -396,7 +396,7 @@ function setupEventListeners() {
             var headers = { 'Content-Type': 'application/json' };
             var body = JSON.stringify({ email: email, password: password, username: username });
 
-            makeRequest('POST', 'http://127.0.0.1:8000/api/auth/register/', headers, body, function (error, data) {
+            makeRequest('POST', 'https://chornate.pythonanywhere.com/api/auth/register/', headers, body, function (error, data) {
                 if (error) {
                     alert('Registration failed');
                     return;

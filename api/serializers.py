@@ -20,15 +20,18 @@ class CategorySerializer(serializers.ModelSerializer):
 
 # Serializer for Product model
 class ProductSerializer(serializers.ModelSerializer):
+    brand = serializers.CharField(source='category.name', read_only=True)
+
     class Meta:
         model = Product
         fields = '__all__'
 
 # Serializer for OrderItem model
 class OrderItemSerializer(serializers.ModelSerializer):
+    product_info = ProductSerializer(source='product', read_only=True)
     class Meta:
         model = OrderItem
-        fields = ['product', 'quantity', 'price']
+        fields = ['product', 'quantity', 'price', 'product_info']
 
 # Serializer for Order model
 class OrderSerializer(serializers.ModelSerializer):
@@ -60,9 +63,12 @@ class OrderSerializer(serializers.ModelSerializer):
 
 # Serializer for Review model
 class ReviewSerializer(serializers.ModelSerializer):
+    user = serializers.StringRelatedField(read_only=True)
+
     class Meta:
         model = Review
         fields = ['id', 'product', 'user', 'rating', 'comment', 'created_at']
+        read_only_fields = ['created_at']
 
 # Serializer for Wishlist model
 class WishlistSerializer(serializers.ModelSerializer):

@@ -85,23 +85,37 @@ function fetchCategories() {
     });
 }
 
-function showSection(section) {
-    currentSection = section;
+function showSection(sectionId) {
+    currentSection = sectionId;
 
-    document.querySelectorAll('.admin-nav-btn').forEach(function (btn) {
-        btn.classList.remove('active');
+    document.querySelectorAll('.page-content').forEach(section => {
+        section.style.display = 'none';
     });
-    document.getElementById('nav-' + section).classList.add('active');
 
-    var title = document.getElementById('section-title');
-    var btnContainer = document.getElementById('action-button-container');
+    const activeSection = document.getElementById(sectionId + '-section');
+    if (activeSection) {
+        activeSection.style.display = 'block';
+    }
 
-    if (section === 'inventory') {
-        title.innerText = "Inventory Management";
-        btnContainer.style.display = 'block';
+    document.getElementById('section-title').textContent =
+        sectionId.charAt(0).toUpperCase() + sectionId.slice(1);
+
+    const actionBtnContainer = document.getElementById('action-button-container');
+    if (sectionId === 'inventory') {
+        actionBtnContainer.innerHTML = '<button class="button is-primary has-text-weight-bold" onclick="openModal(\'addProductModal\')"><span class="icon mr-2"><i class="fas fa-plus"></i></span>Add Product</button>';
     } else {
-        title.innerText = section.charAt(0).toUpperCase() + section.slice(1);
-        btnContainer.style.display = 'none';
+        actionBtnContainer.innerHTML = '';
+    }
+
+    // Update active nav button (Bulma style)
+    document.querySelectorAll('.menu-list button').forEach(btn => {
+        btn.classList.remove('is-active');
+        btn.classList.add('is-ghost');
+    });
+    const activeBtn = document.getElementById('nav-' + sectionId);
+    if (activeBtn) {
+        activeBtn.classList.add('is-active');
+        activeBtn.classList.remove('is-ghost');
     }
 
     renderTable();
@@ -110,32 +124,37 @@ function showSection(section) {
 function renderTable() {
     var header = document.getElementById('table-header');
     var body = document.getElementById('admin-data-list');
-    body.innerHTML = '<tr><td colspan="6" class="text-center">Loading...</td></tr>';
+    body.innerHTML = '<tr><td colspan="6" class="has-text-centered">Loading...</td></tr>';
 
     if (currentSection === 'inventory') {
         header.innerHTML = '<th>ID</th><th>Name</th><th>Brand</th><th>Price</th><th>Stock</th><th>Action</th>';
 
         makeRequest('GET', API_URL + 'products/', null, null, function (error, data) {
             if (error) {
-                body.innerHTML = '<tr><td colspan="6" class="text-danger text-center">Error loading inventory</td></tr>';
+                body.innerHTML = '<tr><td colspan="6" class="has-text-danger has-text-centered">Error loading inventory</td></tr>';
                 return;
             }
 
-            var products = data.results || [];
+            var products = [];
+            if (data && data.results) {
+                products = data.results;
+            } else if (Array.isArray(data)) {
+                products = data;
+            }
             body.innerHTML = '';
             products.forEach(function (item) {
                 body.innerHTML += '<tr>' +
                     '<td>' + item.id + '</td>' +
-                    '<td class="fw-bold">' + item.title + '</td>' +
+                    '<td class="has-text-weight-bold">' + item.title + '</td>' +
                     '<td>' + (item.brand || '-') + '</td>' +
                     '<td>ETB ' + item.price + '</td>' +
                     '<td>' + item.stock_quantity + '</td>' +
                     '<td>' +
-                    '<button class="btn btn-sm text-primary me-2" onclick="editItem(' + item.id + ')">' +
-                    '<i class="fas fa-edit"></i>' +
+                    '<button class="button is-small is-ghost has-text-primary mr-2" onclick="editItem(' + item.id + ')">' +
+                    '<span class="icon"><i class="fas fa-edit"></i></span>' +
                     '</button>' +
-                    '<button class="btn btn-sm text-danger" onclick="deleteItem(' + item.id + ')">' +
-                    '<i class="fas fa-trash"></i>' +
+                    '<button class="button is-small is-ghost has-text-danger" onclick="deleteItem(' + item.id + ')">' +
+                    '<span class="icon"><i class="fas fa-trash"></i></span>' +
                     '</button>' +
                     '</td>' +
                     '</tr>';
@@ -143,10 +162,10 @@ function renderTable() {
         });
     } else if (currentSection === 'orders') {
         header.innerHTML = '<th>Order ID</th><th>Customer</th><th>Total</th><th>Status</th>';
-        body.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Order management coming soon</td></tr>';
+        body.innerHTML = '<tr><td colspan="4" class="has-text-centered has-text-grey">Order management coming soon</td></tr>';
     } else {
         header.innerHTML = '<th>Customer Name</th><th>Email</th><th>Total Orders</th><th>Member Since</th>';
-        body.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Customer management coming soon</td></tr>';
+        body.innerHTML = '<tr><td colspan="4" class="has-text-centered has-text-grey">Customer management coming soon</td></tr>';
     }
 }
 
@@ -170,8 +189,7 @@ document.getElementById('newItemForm').addEventListener('submit', function (e) {
         }
 
         alert('Product added successfully!');
-        var modal = bootstrap.Modal.getInstance(document.getElementById('addProductModal'));
-        if (modal) modal.hide();
+        closeModal('addProductModal');
         document.getElementById('newItemForm').reset();
         renderTable();
     });
@@ -214,8 +232,7 @@ function editItem(id) {
                 editCategorySelect.innerHTML += '<option value="' + cat.id + '" ' + selected + '>' + cat.name + '</option>';
             });
 
-            var modal = new bootstrap.Modal(document.getElementById('editProductModal'));
-            modal.show();
+            openModal('editProductModal');
         });
     });
 }
@@ -241,8 +258,7 @@ document.getElementById('editItemForm').addEventListener('submit', function (e) 
         }
 
         alert('Product updated successfully!');
-        var modal = bootstrap.Modal.getInstance(document.getElementById('editProductModal'));
-        if (modal) modal.hide();
+        closeModal('editProductModal');
         document.getElementById('editItemForm').reset();
         renderTable();
     });

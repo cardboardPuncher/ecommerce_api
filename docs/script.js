@@ -73,15 +73,22 @@ function renderProducts() {
 
     products.forEach(function (product) {
         var col = document.createElement('div');
-        col.className = 'col-lg-3 col-md-6';
-        col.innerHTML = '<div class="product-card">' +
-            '<div class="product-image" style="background-image: url(\'' + product.image + '\');"></div>' +
-            '<p class="product-brand">' + product.platform + ' • ' + product.brand + '</p>' +
-            '<h5 class="product-name">' + product.name + '</h5>' +
-            '<div class="product-footer">' +
-            '<span class="product-price">' + product.formattedPrice + '</span>' +
-            '</div>' +
-            '</div>';
+        col.className = 'column is-12-mobile is-6-tablet is-3-desktop';
+        col.innerHTML = `
+            <div class="card has-background-dark h-100" style="cursor: pointer; border: 1px solid rgba(255,255,255,0.1);">
+                <div class="card-image">
+                    <figure class="image is-4by3" style="background: #1a1a1a;">
+                        <img src="${product.image}" alt="${product.name}" style="object-fit: cover; height: 100%; width: 100%;">
+                    </figure>
+                </div>
+                <div class="card-content">
+                    <p class="is-size-7 has-text-primary has-text-weight-bold mb-1">${product.platform} • ${product.brand}</p>
+                    <h5 class="title is-5 has-text-white mb-3">${product.name}</h5>
+                    <div class="is-flex is-justify-content-space-between is-align-items-center">
+                        <span class="has-text-white has-text-weight-bold">${product.formattedPrice}</span>
+                    </div>
+                </div>
+            </div>`;
         col.addEventListener('click', function () {
             openProduct(product);
         });
@@ -93,12 +100,12 @@ function openProduct(product) {
     currentProduct = product;
 
     var page = document.getElementById('product-page');
-    page.querySelector('.product-title').innerText = product.name;
-    page.querySelector('.product-price').innerText = product.formattedPrice;
-    page.querySelector('.product-description').innerText = product.description || 'No description available.';
-    page.querySelector('.stock-status').innerText = product.stock > 0 ? 'In Stock' : 'Out of Stock';
+    page.querySelector('.title.is-2').innerText = product.name;
+    page.querySelector('.title.is-3').innerText = product.formattedPrice;
+    page.querySelector('.subtitle.is-5').innerText = product.description || 'No description available.';
+    page.querySelector('.has-text-danger').innerText = product.stock > 0 ? 'In Stock' : 'Out of Stock';
 
-    var imgContainer = page.querySelector('.product-image-container img');
+    var imgContainer = page.querySelector('.column.is-6 img');
     if (product.image) {
         imgContainer.src = product.image;
         imgContainer.style.display = 'block';
@@ -106,7 +113,7 @@ function openProduct(product) {
         imgContainer.style.display = 'none';
     }
 
-    var addToCartBtn = page.querySelector('.btn-teal');
+    var addToCartBtn = page.querySelector('.button.is-primary.is-large');
     var newBtn = addToCartBtn.cloneNode(true);
     addToCartBtn.parentNode.replaceChild(newBtn, addToCartBtn);
     newBtn.onclick = function () {
@@ -198,27 +205,31 @@ function renderBag() {
     var total = 0;
 
     if (cart.length === 0) {
-        cartItems.innerHTML = '<p class="text-muted">Your bag is empty.</p>';
+        cartItems.innerHTML = '<p class="has-text-grey">Your bag is empty.</p>';
     } else {
         cart.forEach(function (item, index) {
             total += parseFloat(item.price);
             var itemEl = document.createElement('div');
-            itemEl.className = 'card mb-3 border-0 shadow-sm';
-            itemEl.innerHTML = '<div class="row g-0">' +
-                '<div class="col-md-2 bg-light d-flex align-items-center justify-content-center">' +
-                (item.image ? '<img src="' + item.image + '" class="img-fluid rounded-start" style="max-height: 100px;">' : '<div style="width:50px;height:50px;background:#ddd;"></div>') +
-                '</div>' +
-                '<div class="col-md-8">' +
-                '<div class="card-body">' +
-                '<h5 class="card-title">' + item.name + '</h5>' +
-                '<p class="text-muted small">' + item.brand + '</p>' +
-                '<p class="card-text fw-bold">' + item.formattedPrice + '</p>' +
-                '</div>' +
-                '</div>' +
-                '<div class="col-md-2 d-flex align-items-center justify-content-center">' +
-                '<button class="btn btn-sm btn-outline-danger" onclick="removeFromCart(' + index + ')"><i class="fas fa-trash"></i></button>' +
-                '</div>' +
-                '</div>';
+            itemEl.className = 'box has-background-dark mb-4 p-0';
+            itemEl.style.border = '1px solid rgba(255,255,255,0.1)';
+            itemEl.innerHTML = `
+                <div class="columns is-vcentered is-mobile m-0">
+                    <div class="column is-3 p-0">
+                        <figure class="image is-square">
+                            <img src="${item.image || ''}" style="object-fit: cover; border-radius: 6px 0 0 6px;">
+                        </figure>
+                    </div>
+                    <div class="column is-7 px-4">
+                        <h5 class="title is-5 has-text-white mb-1">${item.name}</h5>
+                        <p class="is-size-7 has-text-grey-light mb-1">${item.brand}</p>
+                        <p class="has-text-primary has-text-weight-bold">${item.formattedPrice}</p>
+                    </div>
+                    <div class="column is-2 has-text-centered">
+                        <button class="button is-ghost has-text-danger" onclick="removeFromCart(${index})">
+                            <span class="icon"><i class="fas fa-trash"></i></span>
+                        </button>
+                    </div>
+                </div>`;
             cartItems.appendChild(itemEl);
         });
     }
@@ -258,7 +269,7 @@ window.removeFromCart = function (index) {
 function fetchReviews(productId) {
     var list = document.getElementById('reviews-list');
     if (!list) return;
-    list.innerHTML = '<p class="text-muted">Loading reviews...</p>';
+    list.innerHTML = '<p class="has-text-grey">Loading reviews...</p>';
 
     makeRequest('GET', REVIEWS_API_URL + '?product=' + productId, null, null, function (error, data) {
         if (error) {
@@ -270,7 +281,7 @@ function fetchReviews(productId) {
         var reviews = data.results || data;
 
         if (reviews.length === 0) {
-            list.innerHTML = '<p class="text-muted">No reviews yet. Be the first to review!</p>';
+            list.innerHTML = '<p class="has-text-grey">No reviews yet. Be the first to review!</p>';
         } else {
             list.innerHTML = reviews.map(function (r) {
                 var stars = '';
@@ -280,11 +291,11 @@ function fetchReviews(productId) {
                 return '<div class="card mb-3">' +
                     '<div class="card-body">' +
                     '<div class="d-flex justify-content-between">' +
-                    '<h6 class="card-subtitle mb-2 text-muted">User ' + r.user + '</h6>' +
-                    '<span class="text-warning">' + stars + '</span>' +
+                    '<h6 class="card-subtitle mb-2 has-text-grey">User ' + r.user + '</h6>' +
+                    '<span class="has-text-warning">' + stars + '</span>' +
                     '</div>' +
                     '<p class="card-text">' + r.comment + '</p>' +
-                    '<small class="text-muted">' + new Date(r.created_at).toLocaleDateString() + '</small>' +
+                    '<small class="has-text-grey">' + new Date(r.created_at).toLocaleDateString() + '</small>' +
                     '</div>' +
                     '</div>';
             }).join('');
@@ -485,15 +496,22 @@ function performSearch(query) {
         noResults.style.display = 'none';
         results.forEach(function (product) {
             var col = document.createElement('div');
-            col.className = 'col-lg-3 col-md-6';
-            col.innerHTML = '<div class="product-card">' +
-                '<div class="product-image" style="background-image: url(\'' + product.image + '\');"></div>' +
-                '<p class="product-brand">' + product.platform + ' • ' + product.brand + '</p>' +
-                '<h5 class="product-name">' + product.name + '</h5>' +
-                '<div class="product-footer">' +
-                '<span class="product-price">' + product.formattedPrice + '</span>' +
-                '</div>' +
-                '</div>';
+            col.className = 'column is-12-mobile is-6-tablet is-3-desktop';
+            col.innerHTML = `
+                <div class="card has-background-dark h-100" style="cursor: pointer; border: 1px solid rgba(255,255,255,0.1);">
+                    <div class="card-image">
+                        <figure class="image is-4by3" style="background: #1a1a1a;">
+                            <img src="${product.image}" alt="${product.name}" style="object-fit: cover; height: 100%; width: 100%;">
+                        </figure>
+                    </div>
+                    <div class="card-content">
+                        <p class="is-size-7 has-text-primary has-text-weight-bold mb-1">${product.platform} • ${product.brand}</p>
+                        <h5 class="title is-5 has-text-white mb-3">${product.name}</h5>
+                        <div class="is-flex is-justify-content-space-between is-align-items-center">
+                            <span class="has-text-white has-text-weight-bold">${product.formattedPrice}</span>
+                        </div>
+                    </div>
+                </div>`;
             col.addEventListener('click', function () {
                 openProduct(product);
             });

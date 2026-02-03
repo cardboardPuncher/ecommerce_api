@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="has-navbar-fixed-top">
 
 <head>
     <meta charset="UTF-8">
@@ -7,6 +7,7 @@
     <title>VELA - Ultimate Gaming Store</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
 
@@ -311,20 +312,25 @@
                     <div class="columns is-variable is-8">
                         <div class="column is-6">
                             <div class="product-image-container">
-                                <img src="" alt="Product" class="image is-4by3 is-fullwidth rounded-3">
+                                <figure class="image is-4by3">
+                                    <img src="" alt="Product" style="object-fit: cover; border-radius: 12px;">
+                                </figure>
                             </div>
                         </div>
                         <div class="column is-6">
                             <h2 class="title is-2 has-text-white mb-2">Shoes</h2>
-                            <p class="subtitle is-5 has-text-grey-light mb-4">Lorem ipsum door sit
-                                amet</p>
-                            <h3 class="title is-3 has-text-white mb-4">$99</h3>
-                            <p class="has-text-danger has-text-weight-bold mb-5">In Stock</p>
-                            <div class="buttons">
+                            <p class="subtitle is-5 has-text-grey-light mb-5">Lorem ipsum door sit amet</p>
+
+                            <div class="is-flex is-align-items-center mb-5">
+                                <h3 class="title is-3 has-text-primary mb-0 mr-4">$99</h3>
+                                <p class="tag is-danger is-light has-text-weight-bold">IN STOCK</p>
+                            </div>
+
+                            <div class="buttons mb-6">
                                 <button class="button is-primary is-large is-rounded px-6 has-text-weight-bold">ADD TO
                                     BAG</button>
                                 <button class="button is-dark is-large is-rounded">
-                                    <span class="icon is-medium">
+                                    <span class="icon">
                                         <i class="far fa-heart"></i>
                                     </span>
                                 </button>

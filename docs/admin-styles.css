@@ -6,6 +6,7 @@
 
 body {
     background-color: var(--dark-bg);
+    font-family: 'Montserrat', sans-serif;
 }
 
 /* Maintain active state for admin menu buttons */

@@ -99,29 +99,74 @@ function renderProducts() {
 function openProduct(product) {
     currentProduct = product;
 
-    var page = document.getElementById('product-page');
+    const page = document.getElementById('product-page');
+    // Selectors optimized for the refined Bulma structure
     page.querySelector('.title.is-2').innerText = product.name;
     page.querySelector('.title.is-3').innerText = product.formattedPrice;
     page.querySelector('.subtitle.is-5').innerText = product.description || 'No description available.';
-    page.querySelector('.has-text-danger').innerText = product.stock > 0 ? 'In Stock' : 'Out of Stock';
 
-    var imgContainer = page.querySelector('.column.is-6 img');
-    if (product.image) {
-        imgContainer.src = product.image;
-        imgContainer.style.display = 'block';
-    } else {
-        imgContainer.style.display = 'none';
+    const stockTag = page.querySelector('.tag');
+    if (stockTag) {
+        stockTag.innerText = product.stock > 0 ? 'IN STOCK' : 'OUT OF STOCK';
+        stockTag.className = product.stock > 0 ? 'tag is-primary is-light has-text-weight-bold' : 'tag is-danger is-light has-text-weight-bold';
     }
 
-    var addToCartBtn = page.querySelector('.button.is-primary.is-large');
-    var newBtn = addToCartBtn.cloneNode(true);
-    addToCartBtn.parentNode.replaceChild(newBtn, addToCartBtn);
-    newBtn.onclick = function () {
-        addToCart(product);
-    };
+    const img = page.querySelector('.column.is-6 img');
+    if (img) {
+        img.src = product.image || '';
+        img.alt = product.name;
+    }
+
+    const addToCartBtn = page.querySelector('.button.is-primary.is-large');
+    if (addToCartBtn) {
+        const newBtn = addToCartBtn.cloneNode(true);
+        addToCartBtn.parentNode.replaceChild(newBtn, addToCartBtn);
+        newBtn.onclick = function () {
+            addToCart(product);
+        };
+    }
+
+    // Populate "Another Products" (Recommended) section
+    renderRecommendedProducts(product.id);
 
     fetchReviews(product.id);
     navigateTo('product');
+}
+
+function renderRecommendedProducts(excludeId) {
+    const grid = document.getElementById('anotherProductsGrid');
+    if (!grid) return;
+    grid.innerHTML = '';
+
+    // Get 4 random products that aren't the current one
+    const recommended = products
+        .filter(p => p.id !== excludeId)
+        .sort(() => 0.5 - Math.random())
+        .slice(0, 4);
+
+    recommended.forEach(function (product) {
+        const col = document.createElement('div');
+        col.className = 'column is-12-mobile is-6-tablet is-3-desktop';
+        col.innerHTML = `
+            <div class="card has-background-dark h-100" style="cursor: pointer; border: 1px solid rgba(255,255,255,0.1);">
+                <div class="card-image">
+                    <figure class="image is-4by3" style="background: #1a1a1a;">
+                        <img src="${product.image}" alt="${product.name}" style="object-fit: cover; height: 100%; width: 100%;">
+                    </figure>
+                </div>
+                <div class="card-content">
+                    <p class="is-size-7 has-text-white-ter has-text-weight-bold mb-1">${product.platform} • ${product.brand}</p>
+                    <h5 class="title is-6 has-text-white mb-3">${product.name}</h5>
+                    <div class="is-flex is-justify-content-space-between is-align-items-center">
+                        <span class="has-text-primary has-text-weight-bold">${product.formattedPrice}</span>
+                    </div>
+                </div>
+            </div>`;
+        col.addEventListener('click', function () {
+            openProduct(product);
+        });
+        grid.appendChild(col);
+    });
 }
 
 // Cart functions
